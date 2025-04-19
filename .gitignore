@@ -44,3 +44,5 @@ bin/
 
 ./config.yml/
 src/main/resources/tessdata/
+
+tess4j/
