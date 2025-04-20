@@ -14,9 +14,12 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.concurrent.*;
 
 public class ImageAnalysisServiceTess4j implements ImageAnalysisService {
     private static final Logger log = LoggerFactory.getLogger(ImageAnalysisServiceTess4j.class);
+    private static final ExecutorService executor = Executors.newFixedThreadPool(4);
 
     private final Tesseract tesseract = new Tesseract();
 
@@ -24,6 +27,16 @@ public class ImageAnalysisServiceTess4j implements ImageAnalysisService {
         final var currentDir = System.getProperty("user.dir");
         final var tess4jDir = Path.of(currentDir, "tess4j");
         final var english = new File(tess4jDir.toFile(), "eng.traineddata");
+
+        if (System.getProperty("tess4j.dir") != null) {
+            final var path = Paths.get(System.getProperty("tess4j.dir"));
+            log.debug("Using tess4j dir: {}", path);
+            tesseract.setDatapath(path.toString());
+            tesseract.setLanguage("eng");
+            tesseract.setVariable("user_defined_dpi", "300");
+
+            return;
+        }
 
         if (!english.exists()) {
             try (final var inputStream = Bootstrap.class.getResourceAsStream("/eng.traineddata")) {
@@ -65,9 +78,28 @@ public class ImageAnalysisServiceTess4j implements ImageAnalysisService {
         }
 
         try {
-            return tesseract.doOCR(bufferedImage);
-        } catch (TesseractException e) {
-            throw new RuntimeException(e);
+            Future<String> future = executor.submit(() -> {
+                log.debug("Performing OCR...");
+                final String text;
+
+                try {
+                    text = tesseract.doOCR(bufferedImage);
+                } catch (TesseractException e) {
+                    throw new RuntimeException(e);
+                }
+
+                log.debug("OCR result: {}", text);
+                return text;
+            });
+
+            return future.get(10, TimeUnit.SECONDS);
+        } catch (TimeoutException e) {
+            log.error("Timeout exception", e);
+        } catch (InterruptedException | ExecutionException e) {
+            log.error("Execution exception", e);
         }
+
+        log.debug("OCR failed, returning empty string");
+        return "";
     }
 }

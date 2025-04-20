@@ -27,7 +27,7 @@ dependencies {
     implementation("org.slf4j:slf4j-api:2.0.9")
     implementation("org.fusesource.jansi:jansi:2.4.0")
 
-    implementation("com.github.nguyenq:tess4j:tess4j-5.15.0")
+    implementation("net.sourceforge.tess4j:tess4j:5.14.0")
 
     implementation("org.spongepowered:configurate-yaml:4.2.0")
 
@@ -60,6 +60,12 @@ allprojects {
             googleJavaFormat("1.26.0").aosp().reflowLongStrings().skipJavadocFormatting()
             formatAnnotations()
             removeUnusedImports()
+        }
+    }
+
+    java {
+        toolchain {
+            languageVersion.set(JavaLanguageVersion.of(21))
         }
     }
 }
