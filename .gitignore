@@ -41,8 +41,7 @@ bin/
 
 ### Mac OS ###
 .DS_Store
-
-./config.yml/
 src/main/resources/tessdata/
 
 tess4j/
+/config.yml
