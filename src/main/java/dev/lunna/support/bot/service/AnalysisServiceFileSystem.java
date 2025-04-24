@@ -8,7 +8,7 @@ import jakarta.inject.Inject;
 import net.dv8tion.jda.api.requests.restaction.MessageCreateAction;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
+import java.util.Collection;
 import java.util.function.Function;
 
 public class AnalysisServiceFileSystem implements AnalysisService {
@@ -17,7 +17,7 @@ public class AnalysisServiceFileSystem implements AnalysisService {
 
     @Override
     public void analyzeQuestionAndReply(@NotNull String content, @NotNull Function<CharSequence, MessageCreateAction> reply) {
-        List<QuestionAnswer> questionAnswers = configContainer.get().questionAnswers;
+        Collection<QuestionAnswer> questionAnswers = configContainer.get().questionAnswers.values();
 
         for (QuestionAnswer questionAnswer : questionAnswers) {
             for (String catchphrase : questionAnswer.catchphrases()) {
